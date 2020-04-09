@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Firebase
 
 class MainTabController: UITabBarController {
     // MARK: - Properties
@@ -22,8 +23,10 @@ class MainTabController: UITabBarController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureViewControllers()
-        configureUI()
+        //logUserOut()
+        view.backgroundColor = .twitterBlue
+        authenticateUserAndConfigureUI()
+        
     }
     
     // MARK: - Helpers
@@ -36,7 +39,6 @@ class MainTabController: UITabBarController {
     func configureViewControllers(){
         let feed = FeedController()
         let nav1 = templateNavigationController(image: UIImage(named: "home_unselected"), rootViewController: feed)
-        
         
         let explore = ExploreController()
         let nav2 = templateNavigationController(image: UIImage(named: "search_unselected"), rootViewController: explore)
@@ -56,6 +58,28 @@ class MainTabController: UITabBarController {
         nav.tabBarItem.image = image
         nav.navigationBar.barTintColor = .white
         return nav
+    }
+    
+    // MARK: - API
+    func authenticateUserAndConfigureUI(){
+        if Auth.auth().currentUser == nil {
+            DispatchQueue.main.async {
+                let nav = UINavigationController(rootViewController: LoginController())
+                nav.modalPresentationStyle = .fullScreen
+                self.present(nav, animated: true, completion: nil)
+            }
+        } else {
+            configureViewControllers()
+            configureUI()
+        }
+    }
+    
+    func logUserOut(){
+        do {
+            try Auth.auth().signOut()
+        } catch let error {
+            print("DEBUG: Failed to sign out with error \(error.localizedDescription)")
+        }
     }
     
     // MARK: - Selectors
