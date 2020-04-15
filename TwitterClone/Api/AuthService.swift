@@ -52,7 +52,7 @@ struct AuthService {
                                   "fullname": fullname,
                                   "profileImageUrl": profileImageUrl]
                     
-                    REF_USERS.updateChildValues(values, withCompletionBlock: completion)
+                    REF_USERS.child(uid).updateChildValues(values, withCompletionBlock: completion)
                 }
             }
         }
