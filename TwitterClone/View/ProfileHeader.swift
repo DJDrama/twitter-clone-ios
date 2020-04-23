@@ -8,9 +8,20 @@
 
 import UIKit
 
+protocol ProfileHeaderDelegate: class {
+    func handleDismissal()
+}
 class ProfileHeader: UICollectionReusableView {
     
     // MARK: - Properties
+    var user: User? {
+        didSet{
+            configure()
+        }
+    }
+    weak var delegate: ProfileHeaderDelegate?
+    private let filterBar = ProfileFilterView()
+    
     private lazy var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = .twitterBlue
@@ -52,14 +63,12 @@ class ProfileHeader: UICollectionReusableView {
     private let fullnameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.boldSystemFont(ofSize: 20)
-        label.text="Eddie Brock"
         return label
     }()
     private let usernameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 16)
         label.textColor = .lightGray
-        label.text = "@venom"
         return label
     }()
     private let bioLabel: UILabel = {
@@ -67,6 +76,27 @@ class ProfileHeader: UICollectionReusableView {
         label.font = UIFont.systemFont(ofSize: 16)
         label.numberOfLines = 3
         label.text = "This is a user bio that will span more than one line for test purposes"
+        return label
+    }()
+    
+    private let underLineView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .twitterBlue
+        return view
+    }()
+    
+    private let followingLabel: UILabel = {
+        let label = UILabel()
+        let followTap = UITapGestureRecognizer(target: self, action: #selector(handleFollowersTapped))
+        label.isUserInteractionEnabled = true
+        label.addGestureRecognizer(followTap)
+        return label
+    }()
+    private let followersLabel: UILabel = {
+        let label = UILabel()
+        let followTap = UITapGestureRecognizer(target: self, action: #selector(handleFollowingTapped))
+        label.isUserInteractionEnabled = true
+        label.addGestureRecognizer(followTap)
         return label
     }()
     
@@ -94,6 +124,22 @@ class ProfileHeader: UICollectionReusableView {
         addSubview(userDetailStack)
         userDetailStack.anchor(top: profileImageView.bottomAnchor, left: leftAnchor, right: rightAnchor, paddingTop: 8, paddingLeft: 12, paddingRight: 12)
         
+        let followerStack = UIStackView(arrangedSubviews: [followingLabel, followersLabel])
+        followerStack.axis = .horizontal
+        followerStack.spacing = 8
+        followerStack.distribution = .fill
+        addSubview(followerStack)
+        followerStack.anchor(top: userDetailStack.bottomAnchor, left: leftAnchor, paddingTop: 8, paddingLeft: 12)
+        
+        filterBar.delegate=self
+        addSubview(filterBar)
+        filterBar.anchor(left: leftAnchor, bottom:bottomAnchor, right: rightAnchor, height: 50)
+        
+        addSubview(underLineView)
+        underLineView.anchor(left: leftAnchor, bottom: bottomAnchor, width:frame.width / CGFloat(ProfileFilterOptions.allCases.count), height: 2)
+        
+        
+        
     }
     
     required init?(coder: NSCoder) {
@@ -102,9 +148,44 @@ class ProfileHeader: UICollectionReusableView {
     
     // MARK: - Selectors
     @objc func handleDismissal(){
-        
+        delegate?.handleDismissal()
     }
     @objc func handleEditProfileFollow(){
         
+    }
+    
+    @objc func handleFollowersTapped(){
+        
+    }
+    
+    @objc func handleFollowingTapped(){
+        
+    }
+    
+    // MARK: - Helpers
+    func configure(){
+        user.map{
+            let viewModel = ProfileHeaderViewModel(user: $0)
+            profileImageView.sd_setImage(with: $0.profileImageUrl, completed: nil)
+            
+            editProfileFollowButton.setTitle(viewModel.actionButtonTitle, for: .normal)
+            followingLabel.attributedText = viewModel.followingString
+            followersLabel.attributedText = viewModel.followersString
+            
+            fullnameLabel.text = $0.fullname
+            usernameLabel.text = viewModel.usernameText
+        }
+        
+    }
+}
+
+ // MARK: - ProfileFilterViewDelegate
+extension ProfileHeader: ProfileFilterViewDelegate{
+    func filterView(_ view: ProfileFilterView, didSelect indexPath: IndexPath) {
+        guard let cell = view.collectionView.cellForItem(at: indexPath) as? ProfileFilterCell else { return }
+        let xPosition = cell.frame.origin.x
+        UIView.animate(withDuration: 0.3) {
+            self.underLineView.frame.origin.x = xPosition
+        }
     }
 }

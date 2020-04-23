@@ -31,6 +31,12 @@ class FeedController: UICollectionViewController{
         fetchTweets()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.barStyle = .default //making status bar to white
+        navigationController?.navigationBar.isHidden=false
+    }
+    
     // MARK: - API
     func fetchTweets(){
         TweetService.shared.fetchTweets { (tweets) in
@@ -90,9 +96,13 @@ extension FeedController : UICollectionViewDelegateFlowLayout {
 
 // MARK: - TweetCellDelegate
 extension FeedController: TweetCellDelegate {
-    func handleProfileImageTapped() {
-        let controller = ProfileController(collectionViewLayout: UICollectionViewFlowLayout())
-        navigationController?.pushViewController(controller, animated: true)
+    func handleProfileImageTapped(_ cell: TweetCell) {
+        let user = cell.tweet?.user
+        user.map{
+            let controller = ProfileController(user: $0)
+            navigationController?.pushViewController(controller, animated: true)
+        }
+        
     }
     
     

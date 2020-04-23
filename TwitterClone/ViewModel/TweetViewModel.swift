@@ -30,7 +30,7 @@ struct TweetViewModel {
         title.append(NSAttributedString(string: " @\(user.username)", attributes: [.font: UIFont.systemFont(ofSize: 14),
                                                                                    .foregroundColor: UIColor.lightGray]))
       
-        title.append(NSAttributedString(string: " ∙ @\(timestamp)", attributes: [.font: UIFont.systemFont(ofSize: 14),
+        title.append(NSAttributedString(string: " ∙ \(timestamp)", attributes: [.font: UIFont.systemFont(ofSize: 14),
         .foregroundColor: UIColor.lightGray]))
         return title
     }
