@@ -94,8 +94,10 @@ extension ExploreController {
 extension ExploreController: UISearchResultsUpdating {
     func updateSearchResults(for searchController: UISearchController) {
         //print("DEBUG : \(searchController.searchBar.text)")
-        guard let searchText = searchController.searchBar.text?.lowercased() else { return }
-        filteredUsers = users.filter({ $0.username.contains(searchText) })
+        guard let searchText = searchController.searchBar.text else { return }
+        
+        
+        filteredUsers = users.filter({ $0.username.localizedCaseInsensitiveContains(searchText) ||  $0.fullname.localizedCaseInsensitiveContains(searchText)})
         tableView.reloadData()
     }
 }
