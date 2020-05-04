@@ -8,6 +8,10 @@
 
 import UIKit
 
+protocol TweetHeaderDelegate: class {
+    func showActionSheet()
+}
+
 class TweetHeader: UICollectionReusableView {
     // MARK: - Properties
     var tweet: Tweet? {
@@ -15,6 +19,7 @@ class TweetHeader: UICollectionReusableView {
             configure()
         }
     }
+    weak var delegate: TweetHeaderDelegate?
     private lazy var profileImageView: UIImageView = {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFill
@@ -155,7 +160,7 @@ class TweetHeader: UICollectionReusableView {
         
     }
     @objc func showActionSheet(){
-        print("adsf")
+        delegate?.showActionSheet()
     }
     @objc func handleRetweetsTapped(){
         
