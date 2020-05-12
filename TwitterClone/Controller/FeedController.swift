@@ -39,16 +39,21 @@ class FeedController: UICollectionViewController{
     
     // MARK: - API
     func fetchTweets(){
+        collectionView.refreshControl?.beginRefreshing()
         TweetService.shared.fetchTweets { (tweets) in
-            self.tweets = tweets
-            self.checkIfUserLikedTweets(tweets)
+            self.tweets = tweets.sorted(by: { $0.timestamp > $1.timestamp})
+            self.checkIfUserLikedTweets()
+            
+            self.collectionView.refreshControl?.endRefreshing()
         }
     }
-    func checkIfUserLikedTweets(_ tweets : [Tweet]){
-        for (index, tweet) in tweets.enumerated() {
+    func checkIfUserLikedTweets(){
+        self.tweets.forEach { (tweet) in
             TweetService.shared.checkIfUserLikedTweet(tweet){ didLike in
                 guard didLike == true else { return }
-                self.tweets[index].didLike = true
+                if let index = self.tweets.firstIndex(where : {$0.tweetID == tweet.tweetID }) {
+                    self.tweets[index].didLike = true
+                }
             }
         }
     }
@@ -65,6 +70,9 @@ class FeedController: UICollectionViewController{
         imageView.setDimensions(width: 44, height: 44)
         navigationItem.titleView = imageView
         
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+        collectionView.refreshControl = refreshControl
     }
     
     func configureLeftBarButton(){
@@ -78,6 +86,11 @@ class FeedController: UICollectionViewController{
         
         profileImageView.sd_setImage(with: user.profileImageUrl, completed: nil)
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: profileImageView)
+    }
+    
+    // MARK: - Selectors
+    @objc func handleRefresh(){
+        fetchTweets()
     }
 }
 
@@ -96,7 +109,6 @@ extension FeedController {
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let controller = TweetController(tweet: tweets[indexPath.row])
         navigationController?.pushViewController(controller, animated: true)
-        
     }
 }
 
@@ -106,8 +118,7 @@ extension FeedController : UICollectionViewDelegateFlowLayout {
         let viewModel = TweetViewModel(tweet: tweets[indexPath.row])
         let height = viewModel.size(forWidth: view.frame.width).height
         return CGSize(width: view.frame.width, height: height + 72)
-    }
-    
+    } 
 }
 
 // MARK: - TweetCellDelegate
