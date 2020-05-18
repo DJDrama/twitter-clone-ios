@@ -169,10 +169,11 @@ extension ProfileController: ProfileHeaderDelegate{
     }
     
     func handleEditProfileFollow(_ header: ProfileHeader) {
-        print("DEBUG: User is followed \(user.isFollowed) before button tap")
-        
         if user.isCurrentUser {
-            print("SHOW EDIT PROFILE CONTROLLER")
+            let controller = EditProfileController(user: user)
+            let nav = UINavigationController(rootViewController: controller)
+            nav.modalPresentationStyle = .fullScreen
+            present(nav, animated: true, completion: nil)
             return
         }
         
